@@ -1,0 +1,28 @@
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div>
+    <div class="navbar-header margin: 100">
+      <a class="navbar-brand"><%= full_title(yield(:title)) %></a>
+    </div>
+
+    <ul class="nav navbar-nav pull-right">
+      <% if signed_in? %>
+
+        <li><%= link_to "Звонки", infravisor_path if current_session.infravisor or current_session.admin %></li>
+        <li><%= link_to "Голосовые сообщения", voicemessages_path if current_session.infravisor or current_session.admin %></li>
+	<li><%= link_to "Переадресация", callforwarder_path if current_session.callforwarder or current_session.admin %></li>
+        
+        <li id="fat-menu" class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+          <%= current_session.name %><b class="caret"></b>
+          </a>
+        <ul class="dropdown-menu pull-right">
+        <li><%= link_to "Настройкa пользователей", users_path if current_session.admin %></li>
+        <li><%= link_to "Настройкa переадресации", phones_path if current_session.admin %></li>
+        <li><%= link_to "Выйти", signout_path, method: "delete" %></li>
+	</ul>
+
+      <% end %>
+    </ul>
+
+  </div>
+</nav>

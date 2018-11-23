@@ -1,0 +1,36 @@
+<% provide(:title, 'Настройкa телефонных номеров') %>
+
+<div style="width: auto; margin: 70px auto">
+
+  <%= form_for :phone, :url => phones_path, :html => { :method => :post } do %>
+
+    <table style="margin-left:0px" id="ver-minimalist">
+      <tr>
+        <th>Имя</th>
+        <th>Номер телефона</th>
+        <th>Ветка</th>
+      </tr>
+      <% @phones.each do |phone| %>
+        <%= fields_for "phone[]", phone do |f| %>
+      <tr>
+        <td><%= f.text_field :name, :value => phone.name %></td>
+        <td><%= f.text_field :phone_number, :value => phone.phone_number %></td>
+        <td><%= f.number_field :branch, :value => phone.branch, :min => 0, :max => 99 %></td>
+        <td><li><%= link_to "удалить", phones_path( :id => phone.id ), method: :delete, data: { confirm: "You sure?" } %></li></td>
+      </tr>
+        <% end %>
+      <% end %>
+      <%= form_for :new_phone do |f| %>
+        <tr><td></td></tr>
+        <tr><td>new:</td></tr>
+        <tr>
+          <td><%= f.text_field :name %></td>
+          <td><%= f.text_field :phone_number %></td>
+          <td><%= f.number_field :branch, :min => 0, :max => 99 %></td>
+	</tr>
+    </table>
+      <%= button_to "Изменить", {}, {:class => "btn btn-large btn-primary", :style => "float: auto; width: 25%; margin-left: 0px"} %>
+      <% end %>
+
+  <% end %>
+</div>

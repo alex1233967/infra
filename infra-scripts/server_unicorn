@@ -1,0 +1,112 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          unicorn_overseer
+# Required-Start:    $local_fs $remote_fs $network
+# Required-Stop:     $local_fs $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the unicorn
+# Description:       starts the unicorn
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+NAME=unicorn
+DESC=unicorn
+RVM_USER=rvm
+
+RVM_ENV=2.0.0@infra
+PROJECT_PATH=/var/www/infra
+PIDFILE=$PROJECT_PATH/tmp/pids/unicorn.pid
+DAEMON=unicorn
+DAEMON_ARGS="-D -c ./config/unicorn.rb -E production"
+
+MOUNT_USER="{{ mount_user }}"
+MOUNT_PASS="{{ mount_pass }}"
+MOUNTOPTS="-t cifs -o username=$MOUNT_USER,password=$MOUNT_PASS,uid=$RVM_USER"
+# Delimeter "|" used for separating shares 
+MOUNTS=( '//192.168.1.61/script2|/mnt/infra/script2' '//192.168.1.61/Infratel/Recordings|/mnt/infra/Recordings' )
+
+#if [ "$DAEMON" == "unicorn_rails" ] ; then
+#        DAEMON_ARGS="$DAEMON_ARGS -E production"
+#fi
+
+# test that unicorn installed
+#su - $RVM_USER -c "rvm $RVM_ENV do $DAEMON --version > /dev/null 2>&1" || \
+#	{ echo "$DAEMON executable not found for $RVM_ENV"; exit 1; }
+
+get_pid() {
+	if test -f $PIDFILE; then
+		__pid=`cat $PIDFILE`
+
+		[ -z "$__pid" ] && __pid=0
+		kill -0 $__pid > /dev/null 2>&1 || __pid=0
+
+		[ "$__pid" == "0" ] && rm -f $PIDFILE
+	else
+		__pid=0
+	fi
+
+	echo $__pid
+}
+
+mount_folders() {
+        for MOUNT in ${MOUNTS[@]}; do
+                # Split up the share into the remote and local mount point.
+                MOUNTP=(`echo ${MOUNT//|/ }`)
+
+                test -d ${MOUNTP[1]} || mkdir -p ${MOUNTP[1]}
+
+                mountpoint -q ${MOUNTP[1]} && echo "${MOUNTP[1]} is already mounted - skipping." ||\
+                mount $MOUNTOPTS ${MOUNTP[0]} ${MOUNTP[1]}
+        done
+}
+
+umount_folders() {
+        for MOUNT in ${MOUNTS[@]}; do
+                MOUNTP=(`echo ${MOUNT//|/ }`)
+
+                mountpoint -q ${MOUNTP[1]} && echo "unmounting ${MOUNTP[1]}." &&\
+                umount ${MOUNTP[1]}
+        done
+}
+
+
+case "$1" in
+	start)
+		echo -n "Starting $DESC: "
+
+		if [ "`get_pid`" == "0" ]; then
+			mount_folders
+			su - $RVM_USER -c "cd $PROJECT_PATH && rvm $RVM_ENV do $DAEMON $DAEMON_ARGS"
+			echo "$NAME."
+		else
+			echo "Already running"
+		fi
+		;;
+
+	stop)
+		echo -n "Stopping $DESC: "
+
+		if [ "`get_pid`" == "0" ]; then
+			echo "Not running"
+		else
+			umount_folders
+			su - $RVM_USER -c "kill -QUIT `cat $PIDFILE`"
+			echo "$NAME."
+		fi
+		;;
+
+	restart)
+		$0 stop
+		sleep 3
+		$0 start
+		;;
+
+	*)
+		echo "Usage: $NAME {start|stop|restart}" >&2
+		exit 1
+		;;
+esac 
+exit 0

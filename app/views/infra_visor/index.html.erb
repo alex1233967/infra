@@ -1,0 +1,49 @@
+<% provide(:title, 'Последние звонки') %>
+
+<div style="width: 100%; margin: 70px auto;">
+
+  <div style="position: absolute; right: 70px; top: 70px">
+    <%= link_to 'Экспорт CSV', infravisor_path(format: :csv), class: "btn btn-success btn-xs" %>
+  </div>
+
+<%= will_paginate @calls, :renderer => WillPaginate::ActionView::LinkRenderer, :next_label => '>>', :previous_label => '<<', :inner_window => 20 %>
+
+  <table style="margin-left: 0px" id="ver-minimalist" summary="calls">
+    <thead>
+      <tr>
+        <th scope="col"><%= sortable "StartTime", "Время начала" %></th>
+        <th scope="col"><%= sortable "OrgName", "Имя звон." %></th>
+        <th scope="col"><%= sortable "OrgNumber", "Номер звон." %></th>
+        <th scope="col"><%= sortable "OrgLine", "Линия звон." %></th>
+        <th scope="col"><%= sortable "DestName", "Имя абон." %></th>
+        <th scope="col"><%= sortable "DestNumber", "Номер абон." %></th>
+        <th scope="col"><%= sortable "Direction", "Тип" %></th>
+        <th scope="col"><%= sortable "Duration", "Длит." %></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <% @calls.each do |call| %>
+        <tr>
+	  <td><%= call[5].strftime("%Y-%m-%d %H:%M") %></td>
+	  <td><%= call[0] %></td>
+	  <td><%= call[1] %></td>
+	  <% if call[2]=='VoiceMessage' %>
+		<td><font color="orange"><%= call[2] %></font></td>
+	  <% else %>
+		<td><%= call[2] %></td>
+	  <% end %>
+	  <td><%= call[3] %></td>
+	  <td><%= call[4] %></td>
+	  <td><%= @call_type[call[6]] %> </td>
+	  <td><%= Time.at(call[7]).utc.strftime("%H:%M:%S") %></td>
+	  <td><div data-turbolinks="false"><%= link_to "скачать", :action => :download, :MediaFileName => call[8] %></div></td>
+        </tr>
+      <% end %>
+    </tbody>
+
+  </table>
+
+</div>
+
+<%= will_paginate @calls, :renderer => WillPaginate::ActionView::LinkRenderer, :next_label => '>>', :previous_label => '<<', :inner_window => 20 %>

@@ -1,0 +1,26 @@
+<% provide(:title, 'Переадресация') %>
+
+<div style="width: 30%; margin: 70px auto;">
+    <%= form_tag(:action => 'update') do %>
+
+      <p>Будние 18:00-19:00</p>
+      <select name="post[phone_number_workday]">
+        <% Phone.all.each do |p| %>
+  	<% !@content_workday.nil? && @content_workday.phone_number == p.phone_number ? s = 'selected': s = '' %>
+          <option <%= s %> value="<%= p.phone_number %>"><%= [p.branch, p.name, number_to_phone(p.phone_number.to_s.last(10))].join(': ') %></option>
+        <% end %>
+      </select>
+  
+      <p>Выходные 11:00-17:00</p>
+      <select disabled name="post[phone_number_weekend]">
+        <% Phone.all.each do |p| %>
+          <% !@content_weekend.nil? && @content_weekend.phone_number == p.phone_number ? s = 'selected': s = '' %>
+          <option <%= s %> value="<%= p.phone_number %>"><%= [p.branch, p.name, number_to_phone(p.phone_number.to_s.last(10))].join(': ') %></option>
+        <% end %>
+      </select>
+
+    <%= button_to "Установить переадресацию", {}, {:class => "btn btn-large btn-primary", :disabled => @disable_button} %>
+
+    <% end %>
+
+</div>

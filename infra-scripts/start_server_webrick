@@ -1,0 +1,28 @@
+#!/bin/bash
+
+PROJECT_PATH=/var/www/infra
+
+DAEMON='rails server'
+DAEMON_ARGS='-b 127.0.0.1 -e production'
+
+MOUNT_USER={{ mount_user }}
+MOUNT_PASS={{ mount_pass }}
+MOUNTOPTS="-t cifs -o username=$MOUNT_USER,password=$MOUNT_PASS"
+# Delimeter "|" used for separating shares 
+MOUNTS=( '//192.168.1.61/script2|/mnt/infra/script2' '//192.168.1.61/Infratel/Recordings|/mnt/infra/Recordings' )
+
+mount_folders() {
+        for MOUNT in ${MOUNTS[@]}; do
+                # Split up the share into the remote and local mount point.
+                MOUNTP=(`echo ${MOUNT//|/ }`)
+
+                test -d ${MOUNTP[1]} || mkdir -p ${MOUNTP[1]}
+
+                mountpoint -q ${MOUNTP[1]} && echo "${MOUNTP[1]} is already mounted - skipping." ||\
+                mount $MOUNTOPTS ${MOUNTP[0]} ${MOUNTP[1]}
+        done
+}
+
+mount_folders && cd $PROJECT_PATH && $DAEMON $DAEMON_ARGS
+
+exit 0

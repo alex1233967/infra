@@ -1,0 +1,44 @@
+<% provide(:title, 'Настройкa пользователей') %>
+
+<div style="width: auto; margin: 70px auto">
+  
+  <%= form_for :session, :url => users_path, :html => { :method => :post } do %>
+
+    <table style="margin-left:0px" id="ver-minimalist">
+      <tr>
+        <th>Имя</th>
+        <th>Новый пароль</th>
+        <th>Админ</th>
+        <th>Звонки</th>
+        <th>Переадр.</th>
+        <th>Разрешенные номера</th>
+      </tr>
+      <% @sessions.each do |session| %>
+        <%= fields_for "session[]", session do |f| %>
+      <tr>
+        <td><%= f.text_field :name, :size => "10", :value => session.name %></td>
+        <td><%= f.password_field :password, :size => "10" %></td>
+        <td><%= f.check_box :admin %></td>
+        <td><%= f.check_box :infravisor %></td>
+        <td><%= f.check_box :callforwarder %></td>
+        <td><%= f.text_area :allowed_phones, size: "40x2" %></td>
+        <td><li><%= link_to "удалить", users_path( :id => session.id ), method: :delete, data: { confirm: "You sure?" } %></li></td>
+      </tr>
+        <% end %>
+      <% end %>
+      <%= form_for :new_session do |f| %>
+        <tr><td>new:</td></tr>
+        <tr>
+          <td><%= f.text_field :name, :size => "10" %></td>
+          <td><%= f.password_field :password, :size => "10" %></td>
+	  <td><%= f.check_box :admin %></td>
+	  <td><%= f.check_box :infravisor %></td>
+	  <td><%= f.check_box :callforwarder %></td>
+	  <td><%= f.text_area :allowed_phones, size: "40x2" %></td>
+        </tr>
+    </table>
+      <%= button_to "Изменить", {}, {:class => "btn btn-large btn-primary", :style => "float: auto; width: 25%; margin-left: 0px"} %>
+      <%end%>
+
+  <% end %>
+</div>

@@ -1,0 +1,27 @@
+<% provide(:title, 'Голосовые сообшения') %>
+
+<div style="width: 100%; margin: 70px auto;">
+
+<%= will_paginate @files, :renderer => WillPaginate::ActionView::LinkRenderer, :next_label => '>>', :previous_label => '<<' %>
+
+<table style="margin-left: 0px" id="ver-minimalist" summary="voicemessages">
+    <thead>
+      <tr>
+        <th scope="col">Время начала</th>
+        <th scope="col">Сообщение</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for file in @files %>
+	<td><%= File.mtime(file).strftime("%Y-%m-%d %H:%M") %></td>
+	<td><%= File.basename(file).to_s %></td>
+	<td><div data-turbolinks="false"><%= link_to "скачать", :action => :download, :MediaFileName =>  File.basename(file).to_s %></div></td>
+        </tr>
+      <% end %>
+    </tbody>
+
+  </table>
+
+</div>
+
+<%= will_paginate @files, :renderer => WillPaginate::ActionView::LinkRenderer, :next_label => '>>', :previous_label => '<<' %>
